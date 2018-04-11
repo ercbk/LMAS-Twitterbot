@@ -55,7 +55,7 @@ pet_df <- flatten(obj_json$petfinder$pets$pet) %>%
                              "P" = "Pending", "X" = "Adopted/Removed"))
 
 
-# Have to unnest options and breeds separately because they may have different nrows
+# Have to unnest options and breeds separately
 
 pet_options <- pet_df %>% 
       select(options.option) %>% 
@@ -66,15 +66,17 @@ pet_options <- pet_df %>%
 pet_breeds <- pet_df %>% 
       select(breeds.breed) %>% 
       unnest %>% 
-      rename(breeds = `$t`) %>% 
+      rename_at(vars(matches("\\$t")), ~str_replace(., "\\$t", "breeds")) %>%
+      rename_at(vars(matches("breeds.breed")), ~str_replace(., "breeds.breed", "breeds")) %>% 
       summarize(breeds = glue::collapse(breeds, sep = ", "))
 
-# BMG appears to have selected row "2" in their script but it might actually be "3" since it's python
 pet_img <- pet_df %>% 
       select(media.photos.photo) %>% 
       unnest %>% 
-      slice(2) %>% 
+      slice(3) %>% 
+      mutate(`$t` = paste0("http://jpg.party/", `$t`)) %>% 
       select(img = `$t`)
+
 
 bot_df <- pet_df %>% 
       select(status, age, size, name, sex, mix, animal, link) %>% 
@@ -96,14 +98,16 @@ message <- bot_df %>%
 
 
 
-# === Tweet ====
+# ==== Get twitter token using tutorial ====
 
 
 # # Currently only getting a read-only token but we need a token with write permission. I created an issue at rtweet but still waiting to hear back
 
+# # *** Workaround method in the next section ***
+
 # # Code taken from tutorial, http://rtweet.info/articles/auth.html 
 
-# appname <- "las-twitterbot"
+# appname <- "<app name>"
 # 
 # key <- "<key>"
 # 
@@ -134,4 +138,41 @@ message <- bot_df %>%
 # 
 # 
 # post_tweet(message[[1]])
+
+
+
+# ==== Alternate Token Method ====
+
+
+# Follow tutorial (linked above) all the way until after this code chunk
+
+appname <- "<app name>"
+
+key <- "<key>"
+
+secret <- "<secret>"
+
+# create token
+twitter_token <- create_token(
+      app = appname,
+      consumer_key = key,
+      consumer_secret = secret
+)
+
+# Shows Home Directory path
+path.expand("~/")
+
+# create_token currently creates a read-only token but if you regenerate your token at the apps.twitter.com site, you'll have a read and write token. copy the new token and new token secret. create_token also creates .rtweet_token.rds which we can load and replace the old token values with the newly created ones.
+
+token_rds <- read_rds("<home directory path>.rtweet_token.rds")
+
+token_rds$credentials$oauth_token <- "<new token>"
+token_rds$credentials$oauth_token_secret <- "<new token secret>"
+
+write_rds(token_rds, "<home directory path>.rtweet_token.rds")
+
+# Next restart R session (and possibly RStudio). You should be ready to tweet after that.
+
+post_tweet(message[[1]])
+
 
