@@ -68,7 +68,7 @@ twitter_token <- create_token(
 # Shows Home Directory path
 path.expand("~/")
 
-# Create_token currently creates a read-only token but if you regenerate your token at the apps.twitter.com site, you'll have a read and write token. Copy the new token and new token secret. Create_token also creates .rtweet_token.rds which we can load and replace the old token values with the newly created ones.
+# create_token currently creates a read-only token but if you regenerate your token at the apps.twitter.com site, you'll have a read and write token. Copy the new token and new token secret. create_token also creates .rtweet_token.rds which we can load and replace the old token values with the newly created ones.
 
 token_rds <- read_rds("<home directory path>.rtweet_token.rds")
 
@@ -77,4 +77,4 @@ token_rds$credentials$oauth_token_secret <- "<new token secret>"
 
 write_rds(token_rds, "<home directory path>.rtweet_token.rds")
 
-# Next restart R session (and possibly RStudio). You should be ready to tweet after that. You shouldn't have to recreate t
+# Next restart R session (and possibly RStudio). You should be ready to tweet after that.

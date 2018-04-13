@@ -108,6 +108,7 @@ message <- pet_df %>%
                                   ")) %>% 
       select(message)
 
+# You'll need to create an app at apps.twitter.com and generate a token first. See get_token.R for details.
 post_tweet(message[[1]], media = tmp)
 
 
