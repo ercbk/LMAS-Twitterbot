@@ -15,8 +15,11 @@ library(rtweet)
 
 # Will need to register at site and get api key and secret
 
-# URL <- "http://api.petfinder.com/pet.find"
-# args <- list(key = "<key>", location = "<City, State Abbreviation>", format = "json", output = "full", count = "2")
+# See https:/www.petfinder.com/developers/api-docs. You can use API method "shelter.find" to figure out your shelter's id. Example: Louisville Metro Animal Service's id = "KY102". Once you have the id, you can use the "shelter.getPets" method as illustrated below. I've used count = "2" for exploratory purposes. For the bot, you'll want more depending on the size of the shelter.
+
+
+# URL <- "http://api.petfinder.com/shelter.getPets"
+# args <- list(key = "<key>", id = "<id>", format = "json", output = "full", count = "2")
 # api_json <- GET(url = URL, query = args)
 
 # lets you know if any errors occurred in the GET request
@@ -31,10 +34,12 @@ library(rtweet)
 
 
 # example data; character vector
-content_json <- read_rds("data/vector_json.rds")
+content_json <- read_rds("data/vector_json.rds") # 2 records
+# content_json <- read_rds("data/vector_json2.rds") # 200 records
 
-# Get a sense of the nested structure. It's long so you can see why I only pulled two records. Just for exploratory purposes so remove from final script.
-content_json %>% prettify
+
+# Get a sense of the nested structure. It's long which is why I only pulled two records.
+# content_json %>% prettify
 
 
 # creates list of nested data.frames
