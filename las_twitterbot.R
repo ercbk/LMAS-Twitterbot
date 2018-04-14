@@ -59,7 +59,8 @@ pet_df <- flatten(obj_json$petfinder$pets$pet) %>%
              size = recode(size, "L" = "Large", "S" = "Small",
                            "M" = "Medium", "XL" = "Extra Large"),
              status = recode(status, "A" = "Adoptable", "H" = "Hold",
-                             "P" = "Pending", "X" = "Adopted/Removed")
+                             "P" = "Pending", "X" = "Adopted/Removed"),
+             name = lettercase::str_title_case(tolower(name))
              )
 
 
@@ -68,7 +69,8 @@ pet_df <- flatten(obj_json$petfinder$pets$pet) %>%
 
 # Dataframe to add columns to
 bot_df <- pet_df %>% 
-      select(name, animal, age, sex, size, link)
+      select(animal, age, sex, size, link) %>% 
+      rename(`pet type` = animal)
 
 # Different colnames depending on nrows unnested
 
@@ -82,7 +84,7 @@ if(!is.na(pet_df$options.option)) {
       
       bot_df <- bot_df %>% 
             bind_cols(pet_options) %>% 
-            select(name, animal, misc, everything())
+            select(`pet type`, misc, everything())
 }
 
 if(!is.na(pet_df$breeds.breed)) {
@@ -95,7 +97,7 @@ if(!is.na(pet_df$breeds.breed)) {
       
       bot_df <- bot_df %>% 
             bind_cols(pet_breeds) %>% 
-            select(name, animal, `breed(s)`, everything())
+            select(`pet type`, `breed(s)`, everything())
 }
 
 
@@ -103,10 +105,16 @@ message <- bot_df %>%
       select_if(~!is.na(.)) %>% 
       gather %>%
       add_row(key = "tags", value = "#adoptdontshop #rescue #adoptme #shelterpets") %>% 
-      mutate(message = glue::glue_data(., "
-                                       {key}: {value}
-                                       ")) %>% 
-      summarize(message = glue::collapse(message, sep = "\n"))
+      mutate(spec = glue::glue_data(., "
+                                    {key}: {value}
+                                    ")) %>% 
+      summarize(spec = glue::collapse(spec, sep = "\n")) %>% 
+      add_column(name = pet_df$name) %>% 
+      mutate(message = glue::glue("
+                                  {name} is:
+                                  {spec}
+                                  ")) %>% 
+      select(message)
 
 
 # Twitter doesn't display images from image links so we have to jump through some hoops and create a temp jpg file to feed to post_tweet
