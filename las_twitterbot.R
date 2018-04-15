@@ -103,8 +103,7 @@ if(!is.na(pet_df$breeds.breed)) {
 
 message <- bot_df %>% 
       select_if(~!is.na(.)) %>% 
-      gather %>%
-      add_row(key = "tags", value = "#adoptdontshop #rescue #adoptme #shelterpets") %>% 
+      gather %>% 
       mutate(spec = glue::glue_data(., "
                                     {key}: {value}
                                     ")) %>% 
@@ -113,6 +112,7 @@ message <- bot_df %>%
       mutate(message = glue::glue("
                                   {name} is:
                                   {spec}
+                                  #adoptdontshop #rescue #adoptme #shelterpets
                                   ")) %>% 
       select(message)
 
