@@ -143,4 +143,7 @@ if(is.null(pet_df$media.photos.photo[[1]])) {
 # You'll need to create an app at apps.twitter.com and generate a token first. See get_token.R for details.
 post_tweet(message[[1]], media = tmp)
 
+# If you're using Windows Task Scheduler to post tweets on a regular schedule, you'll want to read-in the token and point to it explicitly in post_tweet input. In task scheduler in your task's general tab, you want to make sure the "run with highest privileges" box is ticked. Otherwise, the UAC box pops-up everytime the task runs. You'll also want to make sure Rscript.exe has high enough permissions. I gave mine "full control" just to make sure but it may not need to be that high.
 
+# twitter_token <- read_rds("<home directory> twitter_token.rds")
+# post_tweet(message[[1]], media = tmp, token = twitter_token)

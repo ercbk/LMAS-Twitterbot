@@ -1,56 +1,11 @@
 # Get token
 
-# sections: tutorial method, alternate method
+# Currently only getting a read-only token but we need a token with write permission. I created an issue at rtweet but still waiting to hear back. I've added a couple lines to this tutorial, http://rtweet.info/articles/auth.html to bypass the problem.
+
+library(tidyverse)
+library(rtweet)
 
 
-
-# ==== Get twitter token using tutorial ====
-
-
-# # Currently only getting a read-only token but we need a token with write permission. I created an issue at rtweet but still waiting to hear back
-
-#
-
-# # Code taken from tutorial, http://rtweet.info/articles/auth.html 
-
-# appname <- "<app name>"
-# 
-# key <- "<key>"
-# 
-# secret <- "<secret>"
-# 
-# # create token
-# twitter_token <- create_token(
-#       app = appname,
-#       consumer_key = key,
-#       consumer_secret = secret
-# )
-# 
-# # save token to rds file in home directory
-# home_directory <- path.expand("~/")
-# 
-# file_name <- file.path(home_directory, "las_bot_token.rds")
-# 
-# saveRDS(twitter_token, file = file_name)
-# 
-# 
-# # create environment variable so rtweet doesnt need key explicitly in order to work.
-# # Getting error when restarting RStudio. RStudio starts but ignores .Renviron.
-#
-# cat(paste0("<home directory path>//las_bot_token.rds"),
-#     file = file.path(home_directory, ".Renviron"),
-#     append = TRUE,
-#     fill = TRUE)
-# 
-# 
-# post_tweet(message[[1]])
-
-
-
-# ==== Alternate Token Method ====
-
-
-# Follow tutorial (http://rtweet.info/articles/auth.html) all the way until after this code chunk
 
 appname <- "<app name>"
 
@@ -66,15 +21,23 @@ twitter_token <- create_token(
 )
 
 # Shows Home Directory path
-path.expand("~/")
+home_directory <- path.expand("~/")
 
-# create_token currently creates a read-only token but if you regenerate your token at the apps.twitter.com site, you'll have a read and write token. Copy the new token and new token secret. create_token also creates .rtweet_token.rds which we can load and replace the old token values with the newly created ones.
+# create_token currently creates a read-only token but if you regenerate your token at the apps.twitter.com site, you'll have a read and write token. Copy the new token and new token secret and paste below.
 
-token_rds <- read_rds("<home directory path>.rtweet_token.rds")
+twitter_token$credentials$oauth_token <- "<new token>"
+twitter_token$credentials$oauth_token_secret <- "<new token secret>"
 
-token_rds$credentials$oauth_token <- "<new token>"
-token_rds$credentials$oauth_token_secret <- "<new token secret>"
+write_rds(twitter_token, "<home directory path>twitter_token.rds")
 
-write_rds(token_rds, "<home directory path>.rtweet_token.rds")
 
-# Next restart R session (and possibly RStudio). You should be ready to tweet after that.
+file_name <- file.path(home_directory, "twitter_token.rds")
+
+
+# create environment variable so rtweet doesnt need key explicitly in order to work.
+cat(paste0("TWITTER_PAT=", file_name),
+    file = file.path(home_directory, ".Renviron"),
+    append = TRUE,
+    fill = TRUE)
+
+# Now unless you're using Windows Task Scheduler, you should be ready to tweet everytime you open R without explicitly loading twitter_token.
