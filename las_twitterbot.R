@@ -49,10 +49,10 @@ obj_json <- fromJSON(content_json)
 api_message <- obj_json$header$status$message
 
 
-# flatten creates a df; some cols have ".$t" in their names
+# flatten creates a df; some cols have ".$t" in their names; more heavily weights pets that have been in shelter longer so those pets get more greater opportunity to be seen
 pet_df <- flatten(obj_json$petfinder$pets$pet) %>%
       rename_at(vars(ends_with(".$t")), ~str_replace(., "\\.\\$t", "")) %>%
-      sample_n(size = 1) %>%
+      # sample_n(size = 1) %>%
       mutate(lastUpdate = as.POSIXct(lastUpdate),
              link = paste0("https://www.petfinder.com/petdetail/", id),
              sex = recode(sex, "F" = "Female", "M" = "Male"),
@@ -61,7 +61,12 @@ pet_df <- flatten(obj_json$petfinder$pets$pet) %>%
              status = recode(status, "A" = "Adoptable", "H" = "Hold",
                              "P" = "Pending", "X" = "Adopted/Removed"),
              name = lettercase::str_title_case(tolower(name))
-             )
+      ) %>% 
+      mutate(elapsedTime = round(Sys.time() - lastUpdate, 0),
+             rank = rank(elapsedTime)) %>% 
+      mutate(weights = portfolio::weight(., in.var = "rank", type = "linear", sides = "long", size = "all")) %>% 
+      sample_n(size = 1, weight = weights)
+
 
 
 
