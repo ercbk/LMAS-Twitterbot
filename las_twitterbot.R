@@ -34,8 +34,8 @@ library(rtweet)
 
 
 # example data; character vector
-content_json <- read_rds("data/vector_json.rds") # 2 records
-# content_json <- read_rds("data/vector_json2.rds") # 200 records
+# content_json <- read_rds("data/vector_json.rds") # 2 records
+content_json <- read_rds("data/vector_json2.rds") # 200 records
 
 
 # Get a sense of the nested structure. It's long which is why I only pulled two records.
@@ -46,7 +46,7 @@ content_json <- read_rds("data/vector_json.rds") # 2 records
 obj_json <- fromJSON(content_json)
 
 # Think this is redundant since we used the stop_for_status function in the commented API section. If not, may need an if-stop check.
-api_message <- obj_json$header$status$message
+# api_message <- obj_json$header$status$message
 
 
 # flatten creates a df; some cols have ".$t" in their names; more heavily weights pets that have been in shelter longer so those pets get more greater opportunity to be seen
@@ -60,10 +60,10 @@ pet_df <- flatten(obj_json$petfinder$pets$pet) %>%
                            "M" = "Medium", "XL" = "Extra Large"),
              status = recode(status, "A" = "Adoptable", "H" = "Hold",
                              "P" = "Pending", "X" = "Adopted/Removed"),
-             name = lettercase::str_title_case(tolower(name))
-      ) %>% 
-      mutate(elapsedTime = round(Sys.time() - lastUpdate, 0),
-             rank = rank(elapsedTime)) %>% 
+             name = lettercase::str_title_case(tolower(name)),
+             elapsedTime = round(Sys.time() - lastUpdate, 0),
+             rank = rank(elapsedTime)
+      ) %>%  
       mutate(weights = portfolio::weight(., in.var = "rank", type = "linear", sides = "long", size = "all")) %>% 
       sample_n(size = 1, weight = weights)
 
@@ -74,8 +74,7 @@ pet_df <- flatten(obj_json$petfinder$pets$pet) %>%
 
 # Dataframe to add columns to
 bot_df <- pet_df %>% 
-      select(animal, age, sex, size, link) %>% 
-      rename(`pet type` = animal)
+      select(`pet type` = animal, age, sex, size, link)
 
 # Different colnames depending on nrows unnested
 
@@ -148,7 +147,7 @@ if(is.null(pet_df$media.photos.photo[[1]])) {
 # You'll need to create an app at apps.twitter.com and generate a token first. See get_token.R for details.
 post_tweet(message[[1]], media = tmp)
 
-# If you're using Windows Task Scheduler to post tweets on a regular schedule, you'll want to read-in the token and point to it explicitly in post_tweet input. In task scheduler in your task's general tab, you want to make sure the "run with highest privileges" box is ticked. Otherwise, the UAC box pops-up everytime the task runs. You'll also want to make sure Rscript.exe has high enough permissions. I gave mine "full control" just to make sure but it may not need to be that high.
+# If you're using Windows Task Scheduler to post tweets on a regular schedule, you'll want to read-in the token and point to it explicitly in post_tweet input. In task scheduler in your task's general tab, you want to make sure the "run with highest privileges" box is ticked. Otherwise, the UAC box pops-up everytime the task runs. Also, tick "Run whether user is logged on or not" and (if necessary) "do not store password...". Ticking those boxes will make it so the task runs in the background and not open a window. Make sure Rscript.exe has high enough permissions. I gave mine "full control" just to make sure but it may not need to be that high.
 
 # twitter_token <- read_rds("<home directory> twitter_token.rds")
 # post_tweet(message[[1]], media = tmp, token = twitter_token)
