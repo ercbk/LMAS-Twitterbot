@@ -34,8 +34,8 @@ library(rtweet)
 
 
 # example data; character vector
-# content_json <- read_rds("data/vector_json.rds") # 2 records
-content_json <- read_rds("data/vector_json2.rds") # 200 records
+content_json <- read_rds("data/vector_json.rds") # 2 records
+# content_json <- read_rds("data/vector_json2.rds") # 200 records
 
 
 # Get a sense of the nested structure. It's long which is why I only pulled two records.
@@ -123,7 +123,7 @@ message <- bot_df %>%
 
 # Twitter doesn't display images from image links so we have to jump through some hoops and create a temp jpg file to feed to post_tweet
 
-# Some images are blurry on twitter, but rows 3 seems to work alright
+# Some images are blurry on twitter, but row 3 seems to work alright
 
 if(is.null(pet_df$media.photos.photo[[1]])) {
       # Default photo if no photo is provided
