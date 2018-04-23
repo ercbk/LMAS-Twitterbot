@@ -10,12 +10,40 @@ library(rtweet)
 
 
 
-# ==== Pull data from API ====
-
 
 # Will need to register at site and get api key and secret
 
-# See https:/www.petfinder.com/developers/api-docs. You can use API method "shelter.find" to figure out your shelter's id. Example: Louisville Metro Animal Service's id = "KY102". Once you have the id, you can use the "shelter.getPets" method as illustrated below. I've used count = "2" for exploratory purposes. For the bot, you'll want more depending on the size of the shelter.
+# See https:/www.petfinder.com/developers/api-docs. You can use API method "shelter.find" to figure out your shelter's id. Example: Louisville Metro Animal Service's id = "KY102".
+
+
+
+# ==== GET shelter ID from API ====
+
+
+# URL <- "http://api.petfinder.com/shelter.find"
+# args <- list(key = "<key>", location = "Louisville, KY", format = "json", count = "200")
+# api_json <- GET(url = URL, query = args)
+# 
+# # lets you know if any errors occurred in the GET request
+# stop_for_status(api_json)
+# 
+# # creates character vector that's needed for fromJSON
+# content_json <- content(api_json, as = "text", encoding = "UTF-8")
+# 
+# # creates list of nested data.frames
+# obj_json <- fromJSON(content_json)
+# 
+# # Find shelter; flatten creates a df; some cols have ".$t" in their names
+# shelter_df <- flatten(obj_json$petfinder$shelters$shelter) %>% 
+#       rename_at(vars(ends_with(".$t")), ~str_replace(., "\\.\\$t", "")) %>% 
+#       filter(zip == "40205" | zip == "40218") %>% 
+#       select(name, email, id)
+
+
+
+# ==== GET pet data from API ====
+
+# Once you have the id, you can use the "shelter.getPets" method to get pet data. I've used count = "2" for exploratory purposes. For the bot, you'll want more depending on the size of the shelter.
 
 
 # URL <- "http://api.petfinder.com/shelter.getPets"
