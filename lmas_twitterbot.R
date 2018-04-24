@@ -1,6 +1,6 @@
 # las_twitterbot
 
-# sections: Pull data, Create message and tweet
+# sections: Find shelter ID, Get pet data, Create message and tweet
 
 
 library(tidyverse)
@@ -57,10 +57,6 @@ library(rtweet)
 # content_json <- content(api_json, as = "text", encoding = "UTF-8")
 
 
-
-# ==== Manipulate data into message for bot ====
-
-
 # example data; character vector
 content_json <- read_rds("data/vector_json.rds") # 2 records
 # content_json <- read_rds("data/vector_json2.rds") # 200 records
@@ -75,6 +71,10 @@ obj_json <- fromJSON(content_json)
 
 # Think this is redundant since we used the stop_for_status function in the commented API section. If not, may need an if-stop check.
 # api_message <- obj_json$header$status$message
+
+
+
+# ==== Manipulate data into message for bot ====
 
 
 # flatten creates a df; some cols have ".$t" in their names; more heavily weights pets that have been in shelter longer so those pets get more greater opportunity to be seen
@@ -144,6 +144,7 @@ message <- bot_df %>%
                                   {name} is:
                                   {spec}
                                   #adoptdontshop #rescue #adoptme #shelterpets
+                                  Powered by Petfinder.com
                                   ")) %>% 
       select(message)
 
@@ -173,6 +174,9 @@ if(is.null(pet_df$media.photos.photo[[1]])) {
 
 # You'll need to create an app at apps.twitter.com and generate a token first. See get_token.R for details.
 post_tweet(message[[1]], media = tmp)
+
+file.remove(tmp)
+
 
 # If you're using Windows Task Scheduler to post tweets on a regular schedule, you'll want to read-in the token and point to it explicitly in post_tweet input. In task scheduler in your task's general tab, you want to make sure the "run with highest privileges" box is ticked. Otherwise, the UAC box pops-up everytime the task runs. Also, tick "Run whether user is logged on or not" and (if necessary) "do not store password...". Ticking those boxes will make it so the task runs in the background and not open a window. Make sure Rscript.exe has high enough permissions. I gave mine "full control" just to make sure but it may not need to be that high.
 
